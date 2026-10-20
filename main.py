@@ -2,7 +2,7 @@ import asyncio
 import pygame 
 import random
 
-# initilize pygame
+# Initilize pygame
 pygame.init() 
 
 # CONSTANTS 
@@ -15,13 +15,13 @@ ITEM_SIZE = 30
 ITEM_SPEED = 4
 SPAWN_INTERVAL = 800
 
-# create a screen with width and height: canvas we draw on 
+# Create a screen with width and height: canvas we draw on 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
-# set the title of the window
+# Set the title of the window
 pygame.display.set_caption("Catch Game")
 
-# create a clock to control the frame rate
+# Create a clock to control the frame rate
 clock = pygame.time.Clock()
 
 # Game objects 
@@ -30,14 +30,14 @@ player.centerx = WIDTH // 2  # start in the middle of the screen
 player.bottom = HEIGHT - 20  # start near the bottom of the screen
 
 async def main():
-    # main game loop 
+    # Main game loop 
     running = True 
     paused = False
     items = [] 
     last_spawn = pygame.time.get_ticks() 
     while running:
-        # input: for every action by the user of the game
-        # handle events: returns list ofevents that have happened since frame
+        # Input: for every action by the user of the game
+        # Handle events: returns list ofevents that have happened since frame
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
@@ -47,7 +47,7 @@ async def main():
                 if event.key == pygame.K_p: 
                     paused = not paused 
 
-        # update game state
+        # Update game state
         if not paused: 
             keys = pygame.key.get_pressed() # get the state of all keys
 
@@ -56,23 +56,33 @@ async def main():
             if keys[pygame.K_RIGHT]:
                 player.x += PLAYER_SPEED # increase x position to move right
 
-            # keep the player within the screen bounds
+            # Keep the player within the screen bounds
             if player.left < 0:
                 player.left = 0
             if player.right > WIDTH:
                 player.right = WIDTH
 
-        # spawn 
+        # Spawn 
         now = pygame.time.get_ticks()
         if now - last_spawn > SPAWN_INTERVAL: 
-            x = random.randint (0, )
+            x = random.randint (0, WIDTH - ITEM_SIZE)
+            items.append(pygame.RECT(x, -ITEM_SIZE, ITEM_SIZE, ITEM_SIZE))
+            last_spawn = now
 
-        # draw everything
+        # Fall 
+        for item in items: 
+            item.y += ITEM_SPEED
+
+        # Remove items that left the screen
+        items = [item for item in items if item.top < HEIGHT]
+
+        # Draw everything
         screen.fill(BACKGROUND_COLOR)  # fill with dark blue
         pygame.draw.rect(screen, PLAYER_COLOR, player)  # draw player rectangle
-        pygame.draw.circle(screen, ITEM_COLOR, (200,150), 15)  # draw an item in the middle
+        for item in items: 
+            pygame.draw.circle(screen, ITEM_COLOR, item.center, ITEM_SIZE//2)  # draw an item in the middle
 
-        # push what we drew to the screen
+        # Push what we drew to the screen
         pygame.display.flip()
         clock.tick(60)  # limit to 60 FPS
         await asyncio.sleep(0)  # yield control to the event loop 
