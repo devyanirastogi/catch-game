@@ -6,12 +6,13 @@ import random
 pygame.init() 
 
 # CONSTANTS 
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1000, 600
 BACKGROUND_COLOR = (30, 30, 50)  # dark blue 
 PLAYER_COLOR = (80, 200,120)  # green
 ITEM_COLOR = (240, 200,60)  # yellow 
 PLAYER_SPEED = 8  # how fast the player moves
-ITEM_SIZE = 30
+BASKET_WIDTH = 140
+FRUIT_WIDTH = 60
 ITEM_SPEED = 4
 SPAWN_INTERVAL = 800
 
@@ -21,19 +22,45 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 # Set the title of the window
 pygame.display.set_caption("Catch Game")
 
+
+def load_scaled(path, target_width):
+    #Load an image and scale it to target_width, keeping its aspect ratio 
+    img = pygame.image.load(path).convert_alpha()
+    scale = target_width / img.get_width()
+    return pygame.transform.smoothscale(img, (target_width, round(img.get_height() * scale)))
+
+basket_img = load_scaled("basket.png", BASKET_WIDTH)
+fruit_files = ["apple.png", "banana.png", "cherries.png", "grapes.png"]
+fruit_images = [load_scaled(f, FRUIT_WIDTH) for f in fruit_files]
+
+
 # Create a clock to control the frame rate
 clock = pygame.time.Clock()
 
 # Game objects 
-player = pygame.Rect (0,0, 100, 20)  # player is a rectangle
+player = basket_img.get_rect()  # player hitbox matches the basket image
 player.centerx = WIDTH // 2  # start in the middle of the screen
 player.bottom = HEIGHT - 20  # start near the bottom of the screen
+
+class Item:
+    def __init__(self, image):
+        self.image = image
+        self.rect = image.get_rect()
+        self.rect.x = random.randint(0, WIDTH - self.rect.width)
+        self.rect.bottom = 0
+
+    def update(self):
+        self.rect.y += ITEM_SPEED
+
+    def draw(self, surface):
+        surface.blit(self.image, self.rect)
 
 async def main():
     # Main game loop 
     running = True 
     paused = False
     items = [] 
+    score = 0
     last_spawn = pygame.time.get_ticks() 
     while running:
         # Input: for every action by the user of the game
@@ -63,24 +90,34 @@ async def main():
                 player.right = WIDTH
 
         # Spawn 
-        now = pygame.time.get_ticks()
-        if now - last_spawn > SPAWN_INTERVAL: 
-            x = random.randint (0, WIDTH - ITEM_SIZE)
-            items.append(pygame.RECT(x, -ITEM_SIZE, ITEM_SIZE, ITEM_SIZE))
-            last_spawn = now
+        if not paused: 
+            now = pygame.time.get_ticks()
+            if now - last_spawn > SPAWN_INTERVAL: 
+                items.append(Item(random.choice(fruit_images)))
+                last_spawn = now
 
-        # Fall 
-        for item in items: 
-            item.y += ITEM_SPEED
+            # Fall 
+            for item in items: 
+                item.update() 
 
-        # Remove items that left the screen
-        items = [item for item in items if item.top < HEIGHT]
+            # Only the top part of the basket counts as the opening
+            catch_zone = pygame.Rect(player.x, player.y, player.width, player.height // 3)
+
+            # Check for catches, and remove items that left the screen
+            remaining = [] 
+            for item in items: 
+                if catch_zone.colliderect(item.rect):
+                    score += 1
+                    print (score)
+                elif item.rect.top < HEIGHT:
+                    remaining.append (item)
+            items = remaining
 
         # Draw everything
         screen.fill(BACKGROUND_COLOR)  # fill with dark blue
-        pygame.draw.rect(screen, PLAYER_COLOR, player)  # draw player rectangle
+        screen.blit(basket_img, player)
         for item in items: 
-            pygame.draw.circle(screen, ITEM_COLOR, item.center, ITEM_SIZE//2)  # draw an item in the middle
+            item.draw(screen)
 
         # Push what we drew to the screen
         pygame.display.flip()
