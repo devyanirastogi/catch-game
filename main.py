@@ -7,7 +7,8 @@ pygame.init()
 
 # CONSTANTS 
 WIDTH, HEIGHT = 800, 600
-BACKGROUND_COLOR = (30, 30, 50)  # dark blue 
+BACKGROUND_COLOR = (218, 230, 205) # sage 
+TEXT_COLOR = (60, 40, 30) # espresso
 PLAYER_COLOR = (80, 200,120)  # green
 ITEM_COLOR = (240, 200,60)  # yellow 
 PLAYER_SPEED = 8  # how fast the player moves
@@ -75,9 +76,7 @@ async def main():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            if event.type == pygame.KEYDOWN: 
-                if event.key == pygame.K_q: 
-                    running = False 
+            if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p: 
                     paused = not paused 
                 if event.key == pygame.K_r and game_over:
@@ -137,20 +136,20 @@ async def main():
                 game_over = True
 
         # Draw everything
-        screen.fill(BACKGROUND_COLOR)  # fill with dark blue
+        screen.fill(BACKGROUND_COLOR)  # fill with sky blue
         screen.blit(basket_img, player)
         for item in items: 
             item.draw(screen)
 
         # Push what we drew to the screen
-        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+        score_text = font.render(f"Score: {score}", True, TEXT_COLOR)
         screen.blit(score_text, (10, 10))
 
-        lives_text = font.render(f"Lives: {lives}", True, (255, 255, 255))
+        lives_text = font.render(f"Lives: {lives}", True, TEXT_COLOR)
         screen.blit(lives_text, lives_text.get_rect(topright=(WIDTH - 10, 10)))
 
         if game_over:
-            over_text = font.render("GAME OVER - press R to restart", True, (255, 255, 255))
+            over_text = font.render("GAME OVER - press R to restart", True, TEXT_COLOR)
             screen.blit(over_text, over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
 
         pygame.display.flip()
