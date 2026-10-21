@@ -6,7 +6,7 @@ import random
 pygame.init() 
 
 # CONSTANTS 
-WIDTH, HEIGHT = 1000, 600
+WIDTH, HEIGHT = 800, 600
 BACKGROUND_COLOR = (30, 30, 50)  # dark blue 
 PLAYER_COLOR = (80, 200,120)  # green
 ITEM_COLOR = (240, 200,60)  # yellow 
@@ -33,6 +33,7 @@ basket_img = load_scaled("basket.png", BASKET_WIDTH)
 fruit_files = ["apple.png", "banana.png", "cherries.png", "grapes.png"]
 fruit_images = [load_scaled(f, FRUIT_WIDTH) for f in fruit_files]
 
+font = pygame.font.Font(None, 40) # none = default for all browsers
 
 # Create a clock to control the frame rate
 clock = pygame.time.Clock()
@@ -108,7 +109,6 @@ async def main():
             for item in items: 
                 if catch_zone.colliderect(item.rect):
                     score += 1
-                    print (score)
                 elif item.rect.top < HEIGHT:
                     remaining.append (item)
             items = remaining
@@ -120,6 +120,8 @@ async def main():
             item.draw(screen)
 
         # Push what we drew to the screen
+        score_text = font.render(f"Score: {score}", True, (255, 255, 255))
+        screen.blit(score_text, (10, 10))
         pygame.display.flip()
         clock.tick(60)  # limit to 60 FPS
         await asyncio.sleep(0)  # yield control to the event loop 
