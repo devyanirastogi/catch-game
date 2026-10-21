@@ -13,8 +13,10 @@ ITEM_COLOR = (240, 200,60)  # yellow
 PLAYER_SPEED = 8  # how fast the player moves
 BASKET_WIDTH = 140
 FRUIT_WIDTH = 60
+BOMB_WIDTH = 60
 ITEM_SPEED = 4
 SPAWN_INTERVAL = 800
+BOMB_CHANCE = 0.2 # 20% of spawns are bombs
 
 # Create a screen with width and height: canvas we draw on 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -32,6 +34,7 @@ def load_scaled(path, target_width):
 basket_img = load_scaled("basket.png", BASKET_WIDTH)
 fruit_files = ["apple.png", "banana.png", "cherries.png", "grapes.png"]
 fruit_images = [load_scaled(f, FRUIT_WIDTH) for f in fruit_files]
+bomb_img = load_scaled("bomb.png", BOMB_WIDTH)
 
 font = pygame.font.Font(None, 40) # none = default for all browsers
 
@@ -44,8 +47,9 @@ player.centerx = WIDTH // 2  # start in the middle of the screen
 player.bottom = HEIGHT - 20  # start near the bottom of the screen
 
 class Item:
-    def __init__(self, image):
+    def __init__(self, image,kind):
         self.image = image
+        self.kind = kind
         self.rect = image.get_rect()
         self.rect.x = random.randint(0, WIDTH - self.rect.width)
         self.rect.bottom = 0
@@ -62,6 +66,8 @@ async def main():
     paused = False
     items = [] 
     score = 0
+    lives = 3
+    game_over = False
     last_spawn = pygame.time.get_ticks() 
     while running:
         # Input: for every action by the user of the game
@@ -74,9 +80,15 @@ async def main():
                     running = False 
                 if event.key == pygame.K_p: 
                     paused = not paused 
+                if event.key == pygame.K_r and game_over:
+                    score = 0
+                    lives = 3
+                    items = []
+                    game_over = False
+                    last_spawn = pygame.time.get_ticks()
 
         # Update game state
-        if not paused: 
+        if not paused and not game_over: 
             keys = pygame.key.get_pressed() # get the state of all keys
 
             if keys[pygame.K_LEFT]:
@@ -91,10 +103,13 @@ async def main():
                 player.right = WIDTH
 
         # Spawn 
-        if not paused: 
+        if not paused and not game_over: 
             now = pygame.time.get_ticks()
             if now - last_spawn > SPAWN_INTERVAL: 
-                items.append(Item(random.choice(fruit_images)))
+                if random.random() < BOMB_CHANCE:
+                    items.append(Item(bomb_img, "bomb"))
+                else: 
+                    items.append(Item(random.choice(fruit_images), "fruit"))
                 last_spawn = now
 
             # Fall 
@@ -108,10 +123,18 @@ async def main():
             remaining = [] 
             for item in items: 
                 if catch_zone.colliderect(item.rect):
-                    score += 1
+                    if item.kind == "fruit":
+                        score += 1
+                    else: 
+                        lives -= 1
                 elif item.rect.top < HEIGHT:
                     remaining.append (item)
+                elif item.kind == "fruit":
+                    lives -= 1 # missed a fruit
             items = remaining
+
+            if lives <= 0:
+                game_over = True
 
         # Draw everything
         screen.fill(BACKGROUND_COLOR)  # fill with dark blue
@@ -122,6 +145,14 @@ async def main():
         # Push what we drew to the screen
         score_text = font.render(f"Score: {score}", True, (255, 255, 255))
         screen.blit(score_text, (10, 10))
+
+        lives_text = font.render(f"Lives: {lives}", True, (255, 255, 255))
+        screen.blit(lives_text, lives_text.get_rect(topright=(WIDTH - 10, 10)))
+
+        if game_over:
+            over_text = font.render("GAME OVER - press R to restart", True, (255, 255, 255))
+            screen.blit(over_text, over_text.get_rect(center=(WIDTH // 2, HEIGHT // 2)))
+
         pygame.display.flip()
         clock.tick(60)  # limit to 60 FPS
         await asyncio.sleep(0)  # yield control to the event loop 
