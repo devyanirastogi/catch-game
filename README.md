@@ -2,7 +2,7 @@
 
 A 2D arcade game built with Python and pygame, playable in the browser. Catch falling fruit with a basket and avoid the bombs.
 
-**Live demo:** [Click To Play](https://catchgame-gules.vercel.app/)
+[Click To Play](https://catchgame-gules.vercel.app/)
 
 ![Gameplay](artwork/game_ss.png)
 
