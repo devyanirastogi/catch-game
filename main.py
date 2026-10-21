@@ -9,8 +9,6 @@ pygame.init()
 WIDTH, HEIGHT = 800, 600
 BACKGROUND_COLOR = (218, 230, 205) # sage 
 TEXT_COLOR = (60, 40, 30) # espresso
-PLAYER_COLOR = (80, 200,120)  # green
-ITEM_COLOR = (240, 200,60)  # yellow 
 PLAYER_SPEED = 8  # how fast the player moves
 BASKET_WIDTH = 140
 FRUIT_WIDTH = 60
