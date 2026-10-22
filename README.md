@@ -23,6 +23,8 @@ Bombs that are not caught have no penalty.
 | P | Pause or resume |
 | R | Restart after game over |
 
+Since the game requires using physical keys, it can only be played on a laptop. 
+
 ## Artwork
 
 All visual assets (the basket, four fruits, and the bomb) are hand-drawn original artwork.
@@ -62,3 +64,4 @@ build/web/      Generated web build
 - Falling objects are instances of an `Item` class that holds an image, a hitbox, and a type (fruit or bomb).
 - Collisions use rectangle overlap tests.
 - The main loop is asynchronous, as required for browser execution.
+  
